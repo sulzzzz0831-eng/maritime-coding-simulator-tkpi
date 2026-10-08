@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maritime Coding Simulator - SMK Negeri 1 Mundu</title>
+<style>
+:root{
+  --navy:#071a2b; --blue:#0b4f71; --cyan:#18b6d9; --sea:#eaf8fc;
+  --card:#ffffff; --text:#102a43; --muted:#627d98; --line:#d9e6ee;
+  --ok:#16855b; --warn:#d98a00; --danger:#c93434;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(160deg,#061522,#0b3d5a 55%,#e9f8fc);color:var(--text)}
+header{color:white;padding:28px 18px;text-align:center}
+header h1{margin:0 0 7px;font-size:clamp(24px,5vw,40px)}
+header p{margin:0;opacity:.86}
+main{max-width:1050px;margin:auto;padding:0 14px 40px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.tabs button{border:0;border-radius:12px;padding:13px 16px;font-weight:700;cursor:pointer;background:#d9eef5;color:#0b4057}
+.tabs button.active{background:var(--cyan);color:#05212e}
+.section{display:none}.section.active{display:block}
+.card{background:var(--card);border-radius:20px;padding:20px;margin-bottom:18px;box-shadow:0 12px 30px #001a2b25}
+h2{margin-top:0;color:var(--navy)} h3{margin-bottom:8px}
+.small{color:var(--muted);font-size:14px}
+.badge{display:inline-block;padding:5px 10px;border-radius:99px;background:#e8f6fa;color:#07516b;font-weight:700;font-size:13px}
+button.control{min-height:46px;border:0;border-radius:11px;padding:10px 14px;font-weight:700;cursor:pointer;background:#e8f3f7;color:#083d52}
+button.primary{background:var(--cyan);color:#04202a}
+button.danger{background:#ffe7e7;color:#9d2222}
+button.control:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.status{padding:14px;border-radius:12px;background:#f1f6f8;margin-top:12px;font-weight:700}
+.status.ok{background:#e5f7ef;color:#116442}.status.warn{background:#fff4dc;color:#885600}.status.danger{background:#ffe9e9;color:#a62424}
+.maze-wrap{display:grid;grid-template-columns:1fr 310px;gap:18px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;max-width:560px;margin:auto}
+.cell{aspect-ratio:1/1;border:1px solid #c7dce6;border-radius:8px;background:#dff5fa;display:flex;align-items:center;justify-content:center;font-size:clamp(17px,4vw,28px);position:relative}
+.cell.rock{background:#7d8790;color:white}.cell.goal{background:#fff2b8}.cell.ship{background:#b8eff8}
+.cell .coord{position:absolute;bottom:2px;left:4px;font-size:8px;color:#527080}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
+.controls button{min-height:52px}
+.queue{min-height:65px;padding:10px;background:#f3f7f9;border-radius:10px;font-family:monospace;word-break:break-word}
+input[type=range]{width:100%;accent-color:var(--cyan)}
+label{display:block;font-weight:700;margin:12px 0 6px}
+select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:white;font-size:16px}
+.radar{max-width:430px;aspect-ratio:1/1;margin:10px auto 18px;border-radius:50%;position:relative;background:radial-gradient(circle,#e8fbff 0 4%,transparent 4.5%),repeating-radial-gradient(circle,#a5dce8 0 1px,transparent 2px 25%);border:8px solid #0c5570;overflow:hidden}
+.radar:before{content:"";position:absolute;inset:50% 0 auto;height:2px;background:#2b9ab3;box-shadow:0 0 0 1px #2b9ab3}
+.radar:after{content:"";position:absolute;left:50%;top:50%;width:44%;height:2px;background:#20b7d3;transform-origin:left center;transform:rotate(-32deg);box-shadow:0 0 12px #20b7d3}
+.radar-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:22px}
+.target{position:absolute;font-size:26px;transform:translate(-50%,-50%)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;margin-top:10px}
+code{background:#edf3f6;padding:2px 5px;border-radius:5px}
+.footer{text-align:center;color:#d9edf3;font-size:13px;padding:12px}
+@media(max-width:800px){.maze-wrap{grid-template-columns:1fr}.card{padding:15px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚓ Maritime Coding Simulator</h1>
+  <p>Media Pembelajaran Interaktif • Koding & Kecerdasan Artifisial • Fase E</p>
+</header>
+
+<main>
+  <div class="card" style="background:linear-gradient(135deg,#0a3046,#0b6078);color:white">
+    <span class="badge" style="background:#d9f7ff;color:#06445a">🚢 MISI UTAMA</span>
+    <h2 style="color:white;margin-bottom:8px">Operasi Tangkap Ikan APAt</h2>
+    <p style="margin:0;line-height:1.6">
+      Kapal berangkat → 📡 cek radar → 🪨 hindari batu → 🐟 tangkap ikan APAt → 🗼 pulang ke mercusuar.
+    </p>
+  </div>
+  <div class="card" style="border:1px solid #b8dce8">
+    <h3 style="margin-top:0">🧭 Urutan Misi</h3>
+    <div class="row">
+      <span class="badge">1 🚢 Berangkat</span>
+      <span class="badge">2 📡 Radar</span>
+      <span class="badge">3 🪨 Hindari Batu</span>
+      <span class="badge">4 🐟 Cek Air APAt</span>
+      <span class="badge">5 🎣 Tangkap Ikan</span>
+      <span class="badge">6 🗼 Mercusuar</span>
+    </div>
+  </div>
+
+  <section id="maze" class="section" style="display:block">
+    <div class="card">
+      <span class="badge">01 • MISI NAVIGASI</span>
+      <h2>🚢 Kapal Mencari Ikan APAt</h2>
+      <p>Arahkan kapal dari <b>(0,0)</b>. Di perjalanan ada batu karang 🪨, area ikan APAt 🐟, dan tujuan terakhir adalah mercusuar 🗼.</p>
+      <div class="maze-wrap">
+        <div>
+          <div id="mazeGrid" class="grid"></div>
+          <div class="legend">
+            <span>🚢 Kapal</span><span>🪨 Karang</span><span>🐟 Ikan APAt</span><span>🗼 Mercusuar</span>
+          </div>
+        </div>
+        <div>
+          <div class="status" id="mazeStatus">Siaga • Haluan TIMUR • 0/16 perintah</div>
+          <p class="small">Kecepatan: 1 petak/perintah. Maksimal 16 perintah.</p>
+          <div class="controls">
+            <span></span><button class="control" id="forward">⬆️ Maju</button><span></span>
+            <button class="control" id="left">↩️ Kiri</button>
+            <button class="control" id="right">↪️ Kanan</button><span></span>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="control primary" id="run">▶ Jalankan</button>
+            <button class="control danger" id="resetMaze">↻ Reset</button>
+          </div>
+          <h3>Antrean Algoritma</h3>
+          <div id="queue" class="queue">Masih kosong.</div>
+          <p class="small">Konsep: <code>array</code> dieksekusi secara berurutan dari langkah pertama sampai terakhir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="radar" class="section active" style="display:block">
+    <div class="card">
+      <span class="badge">02 • RADAR NKPI / NKN</span>
+      <h2>📡 Radar Kapal — Pemantauan Sebelum Bergerak</h2>
+      <p>Radar adalah alat bantu navigasi kapal. Jika target terlalu dekat <b>atau</b> kabut tebal aktif, sistem memberi peringatan menggunakan logika <code>||</code>.</p>
+      <div class="radar" id="radarVisual">
+        <div class="radar-center">🚢</div>
+        <div class="target" id="target">🚢</div>
+      </div>
+      <label for="distance">Jarak Kapal Lain: <b id="distVal">1200 meter</b></label>
+      <input id="distance" type="range" min="0" max="2000" step="25" value="1200">
+      <div class="small">0 m = tabrakan • 500 m = batas bahaya • 1000 m = batas waspada • 2000 m = aman</div>
+      <label>Kondisi Visibilitas Cuaca:</label>
+      <div class="row">
+        <label style="font-weight:normal"><input type="radio" name="weather" value="clear" checked> ☀️ Cerah (Terang)</label>
+        <label style="font-weight:normal"><input type="radio" name="weather" value="fog"> 🌫️ Kabut Tebal</label>
+      </div>
+      <div id="radarStatus" class="status ok"></div>
+      <div class="status">
+        <b>🧠 Logika Coding di Balik Radar</b><br>
+        <code>jarak &lt; 500 || cuaca == "Kabut Tebal"</code><br>
+        Jarak berbahaya: <span id="nearBool"></span> &nbsp;|&nbsp;
+        Kabut tebal: <span id="fogBool"></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="apat" class="section" style="display:block">
+    <div class="card">
+      <span class="badge">04 • APAt BUDIDAYA</span>
+      <h2>🐟 Kontrol Kualitas Air Ikan APAt</h2>
+      <p>Kapal sudah dekat dengan area ikan. Sebelum ikan ditangkap, cek kualitas air. <b>pH harus 6.5–8.5</b> dan <b>DO minimal 5.0 mg/L</b>. Keduanya harus benar dengan logika <code>&&</code>.</p>
+      <div style="padding:18px;border-radius:14px;background:#081322;border:1px solid #21485c;color:#dff8ff;margin:14px 0">
+        <div style="font-size:18px;font-weight:800">🌊 SIMULASI AIR KOLAM INTENSIF</div>
+        <div style="font-size:40px;text-align:center;margin:18px 0">🐟　🐟　🐠</div>
+        <div class="row">
+          <div class="badge">Sensor pH: <span id="phVal">7.0</span></div>
+          <div class="badge">Sensor DO: <span id="doVal">6.0 mg/L</span></div>
+        </div>
+      </div>
+      <label for="ph">Sensor pH: <b id="phVal">7.0</b></label>
+      <input id="ph" type="range" min="0" max="14" step="0.1" value="7">
+      <div class="small">Rentang ideal: 6.5 – 8.5</div>
+      <label for="do">Oksigen Terlarut (DO): <b id="doVal">6.0 mg/L</b></label>
+      <input id="do" type="range" min="0" max="10" step="0.1" value="6">
+      <div class="small">Ideal: ≥ 5.0 mg/L</div>
+      <div id="apatStatus" class="status ok"></div>
+      <div class="status">
+        <b>🧠 EVALUASI GERBANG LOGIKA "AND (&&)"</b><br><br>
+        <b>Syarat 1 (pH):</b> 6.5 ≤ pH ≤ 8.5 → <span id="phBool"></span><br>
+        <div style="text-align:center;margin:10px"><b>OPERATOR: DAN (AND / &&)</b></div>
+        <b>Syarat 2 (DO):</b> DO ≥ 5.0 mg/L → <span id="doBool"></span>
+      </div>
+    </div>
+  </section>
+
+
+</main>
+
+<div class="footer">SMK Negeri 1 Mundu Cirebon • Media Pembelajaran Interaktif Maritim</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* Tabs */
+document.querySelectorAll(".tab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+    btn.classList.add("active"); $(btn.dataset.target).classList.add("active");
+  });
+});
+
+/* Navigation Maze 7x7 */
+const rocks = new Set(["1,1","2,1","3,2","1,3","4,3","3,5","5,4"]);
+const fish = "4,5";
+const goal = "6,6";
+let ship={x:0,y:0,dir:0}, queue=[], running=false, caught=false;
+const dirs=[{x:1,y:0,n:"TIMUR"},{x:0,y:1,n:"SELATAN"},{x:-1,y:0,n:"BARAT"},{x:0,y:-1,n:"UTARA"}];
+
+function drawGrid(){
+  const g=$("mazeGrid"); g.innerHTML="";
+  for(let y=0;y<7;y++) for(let x=0;x<7;x++){
+    const c=document.createElement("div"); c.className="cell";
+    const key=`${x},${y}`;
+    if(rocks.has(key)) {c.classList.add("rock"); c.textContent="🪨";}
+    else if(key===fish){c.classList.add("goal"); c.textContent="🐟";}
+    else if(key===goal){c.classList.add("goal"); c.textContent="🗼";}
+    if(ship.x===x && ship.y===y){c.classList.add("ship"); c.textContent="🚢";}
+    const coord=document.createElement("span"); coord.className="coord"; coord.textContent=`${x},${y}`; c.appendChild(coord);
+    g.appendChild(c);
+  }
+  $("mazeStatus").textContent=`${running?"Menjalankan":"Siaga"} • Haluan ${dirs[ship.dir].n} • ${queue.length}/16 perintah`;
+  $("queue").textContent=queue.length ? queue.map((q,i)=>`${i+1}.${q}`).join("  ") : "Masih kosong.";
+}
+function addCmd(cmd){
+  if(running || queue.length>=16)return;
+  queue.push(cmd); drawGrid();
+}
+$("forward").onclick=()=>addCmd("MAJU");
+$("left").onclick=()=>addCmd("KIRI");
+$("right").onclick=()=>addCmd("KANAN");
+$("resetMaze").onclick=()=>{ship={x:0,y:0,dir:0};queue=[];running=false;caught=false;drawGrid()};
+$("run").onclick=async()=>{
+  if(running||!queue.length)return;
+  running=true; drawGrid();
+  for(const cmd of queue){
+    await new Promise(r=>setTimeout(r,450));
+    if(cmd==="KANAN") ship.dir=(ship.dir+1)%4;
+    else if(cmd==="KIRI") ship.dir=(ship.dir+3)%4;
+    else{
+      const nx=ship.x+dirs[ship.dir].x, ny=ship.y+dirs[ship.dir].y, key=`${nx},${ny}`;
+      if(nx<0||nx>6||ny<0||ny>6){alert("Kapal keluar dari peta! Rute gagal."); running=false;drawGrid();return;}
+      if(rocks.has(key)){alert(`TUBRUKAN! Karang berada di (${nx},${ny}). Rute gagal.`);running=false;drawGrid();return;}
+      ship.x=nx;ship.y=ny;
+      if(`${ship.x},${ship.y}`===fish && !caught){
+        caught=true;
+        $("mazeStatus").textContent="🐟 IKAN APAt TERTANGKAP! Sekarang lanjutkan perjalanan ke mercusuar 🗼.";
+      }
+    }
+    drawGrid();
+  }
+  running=false;
+  if(`${ship.x},${ship.y}`===goal && caught) $("mazeStatus").textContent="🏆 MISI SELESAI! Ikan APAt berhasil ditangkap dan kapal kembali ke mercusuar.";
+  else if(`${ship.x},${ship.y}`===goal && !caught) $("mazeStatus").textContent="🗼 Sampai mercusuar, tetapi ikan APAt belum tertangkap. Misi belum selesai.";
+  else if(!caught) $("mazeStatus").textContent="Rute selesai. Ikan APAt belum tertangkap.";
+  drawGrid();
+};
+drawGrid();
+
+/* APAt */
+function updateAPAt(){
+  const ph=+$("ph").value, d=+$("do").value;
+  const a=ph>=6.5 && ph<=8.5, b=d>=5;
+  $("phVal").textContent=ph.toFixed(1); $("doVal").textContent=d.toFixed(1)+" mg/L";
+  $("phBool").textContent=a?"TRUE ✓":"FALSE ✕"; $("doBool").textContent=b?"TRUE ✓":"FALSE ✕";
+  const s=$("apatStatus"); s.className="status "+(a&&b?"ok":"danger");
+  s.textContent=a&&b?"STATUS: AIR IDEAL — ikan berada pada kondisi budidaya yang baik.":"STATUS: TIDAK IDEAL — perbaiki parameter air.";
+}
+$("ph").oninput=updateAPAt; $("do").oninput=updateAPAt; updateAPAt();
+
+/* Radar */
+function updateRadar(){
+  const d=+$("distance").value, fog=document.querySelector('input[name="weather"]:checked')?.value==="fog";
+  const near=d<500, danger=near||fog;
+  $("distVal").textContent=d+" m"; $("nearBool").textContent=near?"TRUE ✓":"FALSE ✕"; $("fogBool").textContent=fog?"TRUE ✓":"FALSE ✕";
+  const s=$("radarStatus"); s.className="status "+(danger?"danger":"ok");
+  s.textContent=d<500&&fog?"🚨 BAHAYA: Target terlalu dekat DAN kabut tebal!":d<500?"🚨 BAHAYA: Target kapal di bawah 500 meter!":fog?"⚠️ WASPADA: Kabut tebal aktif!":d<1000?"⚠️ STATUS WASPADA: Target kapal terdeteksi pada jarak menengah.":"✅ STATUS AMAN: Target berada di luar zona bahaya.";
+  const t=$("target"); const pct=15 + (d/2000)*65; t.style.left=pct+"%"; t.style.top="50%";
+}
+$("distance").oninput=updateRadar;
+document.querySelectorAll('input[name="weather"]').forEach(r=>r.addEventListener("change",updateRadar));
+updateRadar();
+</script>
+</body>
+</html>
